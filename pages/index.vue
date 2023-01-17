@@ -14,8 +14,8 @@
 
       <div class="centered">
         <h1>JustAskIt</h1>
-        <h2>{{ questions[index].question_text }}</h2>
-        <div class="buttons">
+        <h2 v-if="questions && questions.length>0">{{ questions[index].question_text }}</h2>
+        <div  v-if="questions && questions.length>0"class="buttons">
           <div class="response">
             <b-button variant="success" @click="vote(0)">{{ questions[index].response1.response_text }}</b-button>
             <div v-show="voted" class="my-4">Choisi par {{ questions[index].response1.choice }} personnes</div>
@@ -26,7 +26,7 @@
           </div>
         </div>
       </div>
-      <b-button variant="success" @click="increaseIndex()">Next</b-button>
+      <b-button  v-if="questions && questions.length>0" variant="success" @click="increaseIndex()">Next</b-button>
 
 
       <b-modal id="modal-1" centered hide-footer title="Create Question">
@@ -80,7 +80,6 @@ import { QuestionType } from "~/utils/type/QuestionType";
 export default Vue.extend({
   name: "IndexPage",
   async asyncData({}) {
-    console.log(`${process.env.baseUrl}/api/questions`);
     const response = await fetch(`${process.env.baseUrl}/api/questions`,
       {
         method: "GET"
@@ -111,6 +110,7 @@ export default Vue.extend({
           response_text: this.form.response2
         }
       };
+      console.log(`${process.env.baseUrl}/api/questions`);
       fetch(`${process.env.baseUrl}/api/questions`, {
         method: "POST",
         headers: {
