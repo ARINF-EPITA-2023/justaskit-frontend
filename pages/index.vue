@@ -3,11 +3,23 @@
     <b-button-toolbar class="top-bar" justify="justify">
       <b-button-group class="mx-1" size="sm" style="max-width: fit-content">
         <b-button size="sm" variant="outline-primary" class="btn" v-b-modal.modal-1>Add</b-button>
-        <b-button size="sm" variant="outline-primary" class="btn" @click="deleteQuestion">Remove</b-button>
+        <b-button v-if="questions && questions.length > 0" size="sm" variant="outline-primary" class="btn"
+                  @click="deleteQuestion"
+                  :disabled="questions[index].upvote >= questions[index].downvote">
+          Remove
+        </b-button>
       </b-button-group>
       <b-button-group class="mx-1" size="sm" style="max-width: fit-content">
-        <b-button size="sm" variant="outline-primary" class="btn" @click="upvote">Upvote</b-button>
-        <b-button size="sm" variant="outline-primary" class="btn" @click="downvote">Downvote</b-button>
+        <b-button v-if="questions && questions.length > 0" size="sm" variant="outline-primary" class="btn"
+                  @click="upvote">
+          Upvote
+          <span v-if="questions && questions.length > 0">({{ questions[index].upvote }})</span>
+        </b-button>
+        <b-button v-if="questions && questions.length > 0"
+                  size="sm" variant="outline-primary" class="btn" @click="downvote">
+          Downvote
+          <span v-if="questions && questions.length > 0">({{ questions[index].downvote }})</span>
+        </b-button>
       </b-button-group>
     </b-button-toolbar>
     <div class="content">
@@ -15,7 +27,7 @@
       <div class="centered">
         <h1>JustAskIt</h1>
         <h2 v-if="questions && questions.length>0">{{ questions[index].question_text }}</h2>
-        <div  v-if="questions && questions.length>0"class="buttons">
+        <div v-if="questions && questions.length>0" class="buttons">
           <div class="response">
             <b-button variant="success" @click="vote(0)">{{ questions[index].response1.response_text }}</b-button>
             <div v-show="voted" class="my-4">Choisi par {{ questions[index].response1.choice }} personnes</div>
@@ -26,7 +38,7 @@
           </div>
         </div>
       </div>
-      <b-button  v-if="questions && questions.length>0" variant="success" @click="increaseIndex()">Next</b-button>
+      <b-button v-if="questions && questions.length>0" variant="success" @click="increaseIndex()">Next</b-button>
 
 
       <b-modal id="modal-1" centered hide-footer title="Create Question">
@@ -74,8 +86,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { NewQuestionType } from "~/utils/type/NewQuestionType";
-import { QuestionType } from "~/utils/type/QuestionType";
+import {NewQuestionType} from "~/utils/type/NewQuestionType";
+import {QuestionType} from "~/utils/type/QuestionType";
 
 export default Vue.extend({
   name: "IndexPage",
@@ -85,7 +97,7 @@ export default Vue.extend({
         method: "GET"
       });
     const questions: QuestionType[] = await response.json();
-    return { questions };
+    return {questions};
   },
   data() {
     return {
@@ -100,7 +112,8 @@ export default Vue.extend({
     };
   },
   methods: {
-    onSubmit() {
+    onSubmit(e: Event) {
+      e.preventDefault();
       const question: NewQuestionType = {
         question_text: this.form.question,
         response1: {
@@ -110,7 +123,6 @@ export default Vue.extend({
           response_text: this.form.response2
         }
       };
-      console.log(`${process.env.baseUrl}/api/questions`);
       fetch(`${process.env.baseUrl}/api/questions`, {
         method: "POST",
         headers: {
@@ -184,7 +196,7 @@ export default Vue.extend({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(response)
+        body: JSON.stringify(this.questions[this.index])
       });
     }
   }
